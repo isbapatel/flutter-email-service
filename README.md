@@ -1,4 +1,5 @@
-# flutter-email-service
+📧 Flutter Email Service
+
 A full-stack email notification and data-logging system built using Flutter, Python, and SQL.
 The Flutter app collects user data → sends it to the backend → backend stores it in the database → SQL trigger automatically sends an email using the Python worker.
 
@@ -31,7 +32,7 @@ Stores email + form data
 
 Trigger-based email system
 
-Automatically calls backend worker
+Automatically notifies backend worker
 
 Ensures reliable delivery and logging
 
@@ -47,19 +48,19 @@ flutter-email-service/
 │     │── main.py          # API
 │     │── email_worker.py  # Email sending worker
 │     │── requirements.txt
-│     │── templates/       # Email HTML templates
-│     │── database.sql     # Tables + triggers (your file)
-│     │── .env             # ignored
+│     │── templates/       
+│     │── database.sql     
+│     │── .env (ignored)
 
 │── pubspec.yaml
 │── README.md
 
 🔧 Backend Setup
-1️⃣ Install dependencies
+Install dependencies
 cd python_backend
 pip install -r requirements.txt
 
-2️⃣ Configure .env
+Create .env
 EMAIL=your_email
 APP_PASSWORD=your_app_password
 SMTP_SERVER=smtp.gmail.com
@@ -70,54 +71,36 @@ DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=email_service
 
-3️⃣ Import SQL file
-
-Run in your SQL client (MySQL/SQL Server/PostgreSQL depending on your setup):
-
+Import SQL
 SOURCE database.sql;
 
-
-This will:
-✔ Create tables
-✔ Create SQL trigger
-✔ Link to backend workflow
-
-4️⃣ Run backend
+Run backend
 python main.py
 
 ▶️ Flutter Setup
 flutter pub get
 flutter run
 
-🧪 How the System Works
-1. Flutter App → Backend
+🧪 How System Works
 
-User submits form → Flutter sends JSON to Python API.
+Flutter sends form data → Backend
 
-2. Backend → SQL Database
+Backend inserts into SQL
 
-Python inserts the data into database.
+SQL trigger notifies worker
 
-3. SQL Trigger → Python Worker
+Worker sends email using SMTP
 
-SQL trigger runs automatically and notifies the backend worker.
-
-4. Email Sent
-
-Python worker reads the entry → sends email using SMTP.
-
-5. Response → App
-
-Backend returns success message to Flutter.
+Response returned to app
 
 🔐 Security
 
-.env and venv/ are ignored
+.env ignored
 
-Database credentials not pushed to GitHub
+venv ignored
 
-Email handled through secure app passwords
+DB passwords not pushed
 
 🤝 Contributing
 
-Feel free to fork and contribute improvements to backend, SQL, or Flutter app.
+Feel free to fork & contribute to backend, SQL or UI.
