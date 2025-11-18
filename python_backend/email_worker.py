@@ -1,11 +1,9 @@
 import time
 import mysql.connector
-from mysql.connector import Error
 import yagmail
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST")
@@ -32,33 +30,33 @@ while True:
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM email_queue WHERE status='pending'")
-        emails = cursor.fetchall()
+        rows = cursor.fetchall()
 
-        if not emails:
-            print("No pending emails...")
-        else:
-            print(f"Found {len(emails)} pending emails")
+        print(f"Found {len(rows)} pending emails")
 
-        for email in emails:
-            print(f"Sending email to {email['email']}")
+        for row in rows:
+            email = row["email"]
+            subject = row["subject"]
+            message = row["message"]
 
-            yag = yagmail.SMTP(EMAIL_SENDER, EMAIL_APP_PASSWORD)
-            yag.send(
-                to=email["email"],
-                subject=email["subject"],
-                contents=email["message"]
-            )
+            print(f"Sending email to {email}")
 
-            cursor.execute(
-                "UPDATE email_queue SET status='sent' WHERE id=%s",
-                (email["id"],)
-            )
-            db.commit()
+            try:
+                yag = yagmail.SMTP(EMAIL_SENDER, EMAIL_APP_PASSWORD)
+                yag.send(to=email, subject=subject, contents=message)
 
-        cursor.close()
-        db.close()
+                cursor.execute("UPDATE email_queue SET status='sent' WHERE id=%s", (row["id"],))
+                db.commit()
 
-    except Exception as e:
-        print("Worker error:", e)
+                print("Email sent!")
 
-    time.sleep(3)
+            except Exception as e:
+                print("Email send error:", e)
+                cursor.execute("UPDATE email_queue SET status='failed' WHERE id=%s", (row["id"],))
+                db.commit()
+
+        time.sleep(5)
+
+    except KeyboardInterrupt:
+        print("Stopping worker...")
+        break

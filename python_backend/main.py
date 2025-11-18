@@ -1,10 +1,14 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 import mysql.connector
-from mysql.connector import Error
 from dotenv import load_dotenv
 import os
 
+# Load templates folder
+templates = Jinja2Templates(directory="templates")
+
+# Load .env file
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST")
@@ -12,9 +16,17 @@ DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
 DB_NAME = os.getenv("DB_NAME")
 
-app = FastAPI()   # ← THIS MUST EXIST
+app = FastAPI()
 
-def get_db_connection():
+# Allow Flutter
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+def get_db():
     return mysql.connector.connect(
         host=DB_HOST,
         user=DB_USER,
@@ -22,24 +34,28 @@ def get_db_connection():
         database=DB_NAME
     )
 
-class RegisterData(BaseModel):
-    name: str
-    email: str
+@app.post("/save_user")
+async def save_user(request: Request):
+    data = await request.json()
 
-@app.post("/register")
-def register_user(data: RegisterData):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    name = data["name"]
+    email = data["email"]
 
-        sql = "INSERT INTO users (name, email) VALUES (%s, %s)"
-        cursor.execute(sql, (data.name, data.email))
-        conn.commit()
+    # Render welcome.html with name
+    template = templates.get_template("welcome.html")
+    rendered_html = template.render(name=name)
 
-        cursor.close()
-        conn.close()
+    # FIXED — Create DB connection
+    db = get_db()
+    cursor = db.cursor()
 
-        return {"message": "User registered! Email will be sent automatically"}
+    cursor.execute("""
+        INSERT INTO email_queue (email, subject, message)
+        VALUES (%s, %s, %s)
+    """, (email, "Welcome to WTWinds!", rendered_html))
 
-    except Error as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return {"status": "success", "message": "User saved & email queued."}

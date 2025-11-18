@@ -52,8 +52,6 @@ app.*.map.json
 .buildlog/
 .history
 
-
-
 # Flutter repo-specific
 /bin/cache/
 /bin/internal/bootstrap.bat
@@ -155,6 +153,14 @@ coverage/
 # Symbols
 app.*.symbols
 
+# Python Backend
+python_backend/__pycache__/
+python_backend/venv/
+python_backend/.env
+python_backend/*.db
+python_backend/*.sqlite
+python_backend/*.sqlite3
+
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
@@ -162,4 +168,7 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
+<<<<<<< HEAD
 >>>>>>> 2a13b9fcaab03e80964b8c596366f76c1a2e8b32
+=======
+>>>>>>> 23ea724314b0dc280e5059a53c4f490e8f7b8801
